@@ -4,15 +4,13 @@ services:
         build: .
         ports: 
             - "80:80"
-            - "443:443"
         volumes:
-            - ./www:/var/www/
-            - ./settings/000-default.conf:/etc/apache2/site-enabled/000-default.conf
+            - ./www:/var/www/html/
         links:
             - db
         networks:
             - default
-    db:
+    dbmysql:
         image: mysql
         ports: 
             - "3306:3306"
@@ -20,7 +18,7 @@ services:
         environment:
             MYSQL_DATABASE: mydb
             MYSQL_USER: itsaba
-            MYSQL_PASSWORD: sabait2005
+            MYSQL_PASSWORD: itsaba
             MYSQL_ROOT_PASSWORD: sabait2005 
         volumes:
             - ./dump:/docker-entrypoint-initdb.d
@@ -28,15 +26,15 @@ services:
             - persistent:/var/lib/mysql
         networks:
             - default
-    phpmyadmin:
-        image: phpmyadmin/phpmyadmin
-        links: 
-            - db:db
-        ports:
-            - 8081:80
-        environment:
-            MYSQL_USER: itsaba
-            MYSQL_PASSWORD: sabait2005
-            MYSQL_ROOT_PASSWORD: sabait2005
+    db:
+	image: postgres
+	container_name: "postgres"
+	ports:
+	- "5432:5432"
+	volumes:
+	- dbpostgres:/var/lib/postgresql/data
+	volumes:
+	  dbpostreges:y
+
 volumes:
     persistent:
