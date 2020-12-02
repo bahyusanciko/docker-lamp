@@ -8,10 +8,12 @@ services:
         volumes:
             - ./www:/var/www/
             - ./settings/000-default.conf:/etc/apache2/site-enabled/000-default.conf
+            - ./settings/php/memory_limit.ini:/usr/local/etc/php/ini/conf.d/memory_limit.ini
         links:
             - db
         networks:
             - default
+        restart: unless-stopped
     db:
         image: mysql
         ports: 
@@ -19,9 +21,9 @@ services:
         command: --default-authentication-plugin=mysql_native_password
         environment:
             MYSQL_DATABASE: mydb
-            MYSQL_USER: itsaba
-            MYSQL_PASSWORD: sabait2005
-            MYSQL_ROOT_PASSWORD: sabait2005 
+            MYSQL_USER: ${DB_USER}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD} 
         volumes:
             - ./dump:/docker-entrypoint-initdb.d
             - ./conf:/etc/mysql/conf.d
@@ -35,8 +37,8 @@ services:
         ports:
             - 8081:80
         environment:
-            MYSQL_USER: itsaba
-            MYSQL_PASSWORD: sabait2005
-            MYSQL_ROOT_PASSWORD: sabait2005
+            MYSQL_USER: ${DB_USER}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
 volumes:
     persistent:

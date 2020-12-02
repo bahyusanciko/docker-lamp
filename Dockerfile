@@ -1,39 +1,11 @@
 FROM php:7.2-apache 
-RUN docker-php-ext-install mysqli
-RUN docker-php-ext-install pdo pdo_mysql opcache
-RUN apt-get update -y && apt-get install -y sendmail libpng-dev
 
-RUN apt-get update && \
-    apt-get install -y \
-        zlib1g-dev 
-
-RUN docker-php-ext-install mbstring
-
-RUN docker-php-ext-install zip
-
-RUN apt-get install -y \
-    libwebp-dev \
-    libjpeg62-turbo-dev \
-    libpng-dev libxpm-dev \
-    libfreetype6-dev
-
-RUN docker-php-ext-configure gd \
-    --with-gd \
-    --with-webp-dir \
-    --with-jpeg-dir \
-    --with-png-dir \
-    --with-zlib-dir \
-    --with-xpm-dir \
-    --with-freetype-dir
-
-RUN docker-php-ext-install gd
-
-
-RUN apt-get update \
-    && apt-get install -y libzip-dev \
-    && apt-get install -y zlib1g-dev \
+RUN apt-get update && apt-get install -y libpng-dev libjpeg-dev libpq-dev libldap2-dev \
     && rm -rf /var/lib/apt/lists/* \
-    && docker-php-ext-install zip
+    && docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr \
+    && docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/ \
+    && docker-php-ext-install mysqli gd mbstring opcache pdo pdo_mysql pgsql pdo_pgsql zip ldap bcmath
+
 
 # 2. apache configs + document root
 ENV APACHE_DOCUMENT_ROOT=/var/www/
@@ -42,10 +14,19 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 
 # 3. mod_rewrite for URL rewrite and mod_headers for .htaccess extra headers like Access-Control-Allow-Origin-
 RUN a2enmod rewrite headers
+RUN a2enmod rewrite
+RUN a2enmod ssl
+
+EXPOSE 80
+EXPOSE 443
 
 #ssl
-
-COPY ./settings/ssl.crt /etc/apache2/ssl/ssl.crt
-COPY ./settings/ssl.key /etc/apache2/ssl/ssl.key
-RUN mkdir -p /var/run/apache2/
-
+ADD ./settings/000-default.conf /etc/apache2/sites-enabled/
+#ADD ./settings/default-ssl.conf /etc/apache2/sites-anabled/
+#COPY ./settings/ssl.crt /etc/apache2/ssl/ssl.crt
+#COPY ./settings/ssl.key /etc/apache2/ssl/ssl.key
+RUN ln -s /etc/setting/default-ssl.conf  /etc/apache2/mods-enabled/default-ssl.conf
+RUN mkdir -p /var/run/apache2/ \
+    && apachectl restart \
+    && apachectl stop \
+    && apachectl start
