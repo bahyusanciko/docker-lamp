@@ -25,7 +25,7 @@ ADD ./settings/000-default.conf /etc/apache2/sites-enabled/
 #ADD ./settings/default-ssl.conf /etc/apache2/sites-anabled/
 #COPY ./settings/ssl.crt /etc/apache2/ssl/ssl.crt
 #COPY ./settings/ssl.key /etc/apache2/ssl/ssl.key
-RUN ln -s /etc/setting/default-ssl.conf  /etc/apache2/mods-enabled/default-ssl.conf
+#RUN ln -s /etc/setting/default-ssl.conf  /etc/apache2/mods-enabled/default-ssl.conf
 RUN mkdir -p /var/run/apache2/ \
     && apachectl restart \
     && apachectl stop \
