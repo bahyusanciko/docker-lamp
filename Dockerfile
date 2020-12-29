@@ -27,6 +27,7 @@ RUN apt-get update && apt-get install -y libpng-dev libjpeg-dev libpq-dev liblda
 ENV APACHE_DOCUMENT_ROOT=/var/www/
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+RUN echo "date.timezone = Asia/Jakarta" > /usr/local/etc/php/conf.d/timezone.ini
 
 # 3. mod_rewrite for URL rewrite and mod_headers for .htaccess extra headers like Access-Control-Allow-Origin-
 RUN a2enmod rewrite headers
@@ -42,7 +43,4 @@ ADD ./settings/000-default.conf /etc/apache2/sites-enabled/
 #COPY ./settings/ssl.crt /etc/apache2/ssl/ssl.crt
 #COPY ./settings/ssl.key /etc/apache2/ssl/ssl.key
 #RUN ln -s /etc/setting/default-ssl.conf  /etc/apache2/mods-enabled/default-ssl.conf
-RUN mkdir -p /var/run/apache2/ \
-    && apachectl restart \
-    && apachectl stop \
-    && apachectl start
+RUN apachectl restart
