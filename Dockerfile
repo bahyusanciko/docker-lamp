@@ -33,6 +33,11 @@ RUN echo "date.timezone = Asia/Jakarta" > /usr/local/etc/php/conf.d/timezone.ini
 ENV APACHE_DOCUMENT_ROOT=/var/www/
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+ADD ./settings/000-default.conf /etc/apache2/sites-enabled/
+#ADD ./settings/default-ssl.conf /etc/apache2/sites-anabled/
+#COPY ./settings/ssl.crt /etc/apache2/ssl/ssl.crt
+#COPY ./settings/ssl.key /etc/apache2/ssl/ssl.key
+#RUN ln -s /etc/setting/default-ssl.conf  /etc/apache2/mods-enabled/default-ssl.conf
 
 # 3. mod_rewrite for URL rewrite and mod_headers for .htaccess extra headers like Access-Control-Allow-Origin-
 RUN a2enmod rewrite headers
@@ -43,14 +48,7 @@ RUN a2ensite default-ssl
 
 EXPOSE 80
 EXPOSE 443
-#ssl
-
-#ssl
-ADD ./settings/000-default.conf /etc/apache2/sites-enabled/
-#ADD ./settings/default-ssl.conf /etc/apache2/sites-anabled/
-#COPY ./settings/ssl.crt /etc/apache2/ssl/ssl.crt
-#COPY ./settings/ssl.key /etc/apache2/ssl/ssl.key
-#RUN ln -s /etc/setting/default-ssl.conf  /etc/apache2/mods-enabled/default-ssl.conf
+#restart apache
 RUN apache2ctl restart \
     && apache2ctl stop \
     && apache2ctl start
