@@ -1,0 +1,80 @@
+version: "3.1"
+services:
+    www:
+        build: .
+        ports: 
+            - "80:80"
+            - "443:443"
+        volumes:
+            - ./www:/var/www/
+            - ./settings/000-default.conf:/etc/apache2/site-enabled/000-default.conf
+            - ./settings/php/memory_limit.ini:/usr/local/etc/php/ini/conf.d/memory_limit.ini
+        links:
+            - db
+        networks:
+            - default
+        restart: unless-stopped
+    db:
+        image: mysql
+        ports: 
+            - "3306:3306"
+        command: --default-authentication-plugin=mysql_native_password
+        environment:
+            MYSQL_DATABASE: mydb
+            MYSQL_USER: ${DB_USER}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD} 
+        volumes:
+            - ./dump:/docker-entrypoint-initdb.d
+            - ./conf:/etc/mysql/conf.d
+            - persistent:/var/lib/mysql
+        networks:
+            - default
+    postgres:
+        container_name: postgres_container
+        image: postgres:latest
+        environment:
+            POSTGRES_USER: ${DB_USER}
+            POSTGRES_PASSWORD: ${DB_PASSWORD}
+            PGDATA: /data/postgres
+        volumes:
+            - postgres:/data/postgres
+        ports:
+            - "5432:5432"
+        networks:
+            - postgres
+        restart: unless-stopped
+
+    pgadmin:
+        container_name: pgadmin_container
+        image: dpage/pgadmin4:latest
+        environment:
+            PGADMIN_DEFAULT_EMAIL: ${EMAIL}
+            PGADMIN_DEFAULT_PASSWORD: ${PASSWORD}
+        volumes:
+            - pgadmin:/root/.pgadmin
+        ports:
+            - "8082:80"
+        networks:
+            - postgres
+        restart: unless-stopped
+    
+    mongodb_container:
+        image: mongo:latest
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
+            MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
+        ports:
+        - 27017:27017
+        volumes:
+        - mongodb_data_container:/data/db
+
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+    persistent:
+    postgres:
+    pgadmin:
+    mongodb_data_container:
